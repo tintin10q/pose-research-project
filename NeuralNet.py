@@ -50,6 +50,7 @@ while os.path.exists(path):
     path = f"NeuralNet_{n}.csv"
 
 with open(path, "a+") as output:
+    output.write("alpha, final_result, train_result,time,total1\n")
     for alpha in [0.0001, 0.0005, 0.001, 0.005, 0.01]:
         t0 = time.time()
         mlp = MLPClassifier(solver='adam', early_stopping=True, verbose=True, random_state=0, hidden_layer_sizes=[100, 100, 100, 100], alpha=alpha, max_iter=9000).fit(
@@ -72,4 +73,5 @@ with open(path, "a+") as output:
         total = round(t1 - t0, 2)
 
         print(f"Run-time without cross-val: {total}, run-time with cross-val: {total1}")
-        output.write(f"{alpha}, {final_result}, {train_result}\n")
+        
+        output.write(f"{alpha}, {final_result}, {train_result} {total} {total1}\n")
