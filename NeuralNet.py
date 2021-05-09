@@ -7,7 +7,16 @@ from sklearn import preprocessing
 import time
 import numpy as np
 import os
+import sys
 
+
+if len(sys.argv) > 1:
+    assert int(sys.argv[1]), "Amount of cores is not a number"
+    cores = int(sys.argv[1])
+    assert cores <= os.cpu_count(), "Cores given"
+else:
+    cores = os.get_cpu() * 2
+print(f"Running with {cores} cores")
 
 
 df = pd.read_csv('ShakeFive2.metadata.csv')
@@ -48,7 +57,7 @@ with open("NeuralNet.txt", "a+") as output:
         mlp = MLPClassifier(solver='adam', early_stopping=True, random_state=0, hidden_layer_sizes=[100,100,100,100], alpha=alpha, max_iter=9000).fit(X_train, y_train)
         t1 = time.time()
 
-        cross_val_dic = cross_validate(mlp, X_train, y_train, n_jobs=-1, return_estimator=True)
+        cross_val_dic = cross_validate(mlp, X_train, y_train, n_jobs=cores, return_estimator=True)
         t2 = time.time()
 
         scores = cross_val_dic['test_score']

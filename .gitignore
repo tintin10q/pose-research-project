@@ -3,9 +3,11 @@ __pycache__/
 *.py[cod]
 *$py.class
 .idea
-# C extensions
-*.so
 
+*.csv
+*.so
+*.csv
+!ShakeFive2.metadata.csv
 # Distribution / packaging
 .Python
 build/

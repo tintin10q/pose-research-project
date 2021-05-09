@@ -5,6 +5,16 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 import time
 import os
+import sys
+
+if len(sys.argv) > 1:
+    assert int(sys.argv[1]), "Amount of cores is not a number"
+    cores = int(sys.argv[1])
+    assert cores <= os.cpu_count(), "Cores given"
+else:
+    cores = os.get_cpu() * 2    
+
+print(f"Running with {cores} cores")
 
 df = pd.read_csv('ShakeFive2.metadata.csv')
 
@@ -23,6 +33,7 @@ X = df.drop(["S0ActionName", "S1ActionName"], axis=1)  # remove those y from x
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0) # split that boi
 
+
 n = 1
 path = f"Knncrossvalidation_{n}.csv"
 while os.path.exists(path):
@@ -33,11 +44,11 @@ with open(path, "w+") as output:
     output.write(f"k, final_result, train_result, traintime, crossval_time\n")
     for k in range(1, 250, 4):
         t0 = time.time()
-        clf = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
+        clf = KNeighborsClassifier(n_neighbors=k, n_jobs=10)
         clf.fit(X_train, y_train)
         t1= time.time()
 
-        cross_val_dic = cross_validate(clf, X_train, y_train, n_jobs=-1, return_estimator=True)
+        cross_val_dic = cross_validate(clf, X_train, y_train, n_jobs=cores, return_estimator=True)
         t2 = time.time()
 
         scores = cross_val_dic['test_score']
