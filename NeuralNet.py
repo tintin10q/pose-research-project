@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn import preprocessing
 import time
 import numpy as np
-
+import os
 
 
 
@@ -35,6 +35,13 @@ X_test = scaler.transform(X_test)
 # mglearn.discrete_scatter(X_train[:, 0], X_train[:, 1], y_train)
 # plt.xlabel("Feature 0")
 # plt.ylabel("Feature 1")
+
+n = 1
+path = f"NeuralNet_{n}.csv"
+while os.path.exists(path):
+    n += 1
+    path = f"NeuralNet_{n}.csv"
+
 with open("NeuralNet.txt", "a+") as output:
     for alpha in [0.0001, 0.0005, 0.001, 0.005, 0.01]:
         t0 = time.time()

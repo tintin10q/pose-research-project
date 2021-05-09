@@ -4,6 +4,7 @@ from sklearn.model_selection import cross_validate
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import train_test_split
 import time
+import os
 
 df = pd.read_csv('ShakeFive2.metadata.csv')
 
@@ -22,8 +23,14 @@ X = df.drop(["S0ActionName", "S1ActionName"], axis=1)  # remove those y from x
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0) # split that boi
 
-
-with open("Knncrossvalidation.txt", "a+") as output:
+n = 1
+path = f"Knncrossvalidation_{n}.csv"
+while os.path.exists(path):
+    n += 1
+    path = f"Knncrossvalidation_{n}.csv"
+print(f"Writing results to \"{path}\"")
+with open(path, "w+") as output:
+    output.write(f"k, final_result, train_result, traintime, crossval_time\n")
     for k in range(1, 250, 4):
         t0 = time.time()
         clf = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
@@ -40,7 +47,7 @@ with open("Knncrossvalidation.txt", "a+") as output:
         total1 = t2 - t0
         total = t1 - t0
         print(f'K={k} gave {final_result}% accuracy in testing with the best cross-validated split')
-        output.write(f"{k}, {final_result}, {train_result}\n")
+        output.write(f"{k}, {final_result}, {train_result}, {total},{total1}\n")
 
 
         print(f"KNN Run-time without cross-val: {total}, run-time with cross-val: {total1}")
