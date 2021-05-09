@@ -10,9 +10,8 @@ import sys
 if len(sys.argv) > 1:
     assert int(sys.argv[1]), "Amount of cores is not a number"
     cores = int(sys.argv[1])
-    assert cores <= os.cpu_count(), "Cores given"
 else:
-    cores = os.get_cpu() * 2    
+    cores = os.get_cpu() * 2
 
 print(f"Running with {cores} cores")
 
@@ -44,7 +43,7 @@ with open(path, "w+") as output:
     output.write(f"k, final_result, train_result, traintime, crossval_time\n")
     for k in range(1, 250, 4):
         t0 = time.time()
-        clf = KNeighborsClassifier(n_neighbors=k, n_jobs=10)
+        clf = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
         clf.fit(X_train, y_train)
         t1= time.time()
 
