@@ -11,7 +11,7 @@ if len(sys.argv) > 1:
     assert int(sys.argv[1]), "Amount of cores is not a number"
     cores = int(sys.argv[1])
 else:
-    cores = os.get_cpu() * 2
+    cores = os.get_cpu()
 
 print(f"Running with {cores} cores")
 
@@ -27,11 +27,10 @@ df = df.drop(["FrameID", "timestamp", "VideoName"], axis=1)  # remove those coll
 
 df = df.mask(df.eq('None')).dropna()  # remove rows with None in them
 
-y = df.S0ActionName  #subsetting only the action names (target labels)
+y = df.S0ActionName  # subsetting only the action names (target labels)
 X = df.drop(["S0ActionName", "S1ActionName"], axis=1)  # remove those y from x
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0) # split that boi
-
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)  # split that boi
 
 n = 1
 path = f"Knncrossvalidation_{n}.csv"
@@ -39,27 +38,26 @@ while os.path.exists(path):
     n += 1
     path = f"Knncrossvalidation_{n}.csv"
 print(f"Writing results to \"{path}\"")
-with open(path, "w+") as output:
+with open(path, "a+") as output:
     output.write(f"k, final_result, train_result, traintime, crossval_time\n")
     for k in range(1, 250, 4):
         t0 = time.time()
         clf = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
         clf.fit(X_train, y_train)
-        t1= time.time()
+        t1 = time.time()
 
         cross_val_dic = cross_validate(clf, X_train, y_train, n_jobs=cores, return_estimator=True)
         t2 = time.time()
 
         scores = cross_val_dic['test_score']
+        print(scores)
         best_model = cross_val_dic['estimator'][np.argmax(scores)]
         final_result = best_model.score(X_test, y_test)
-        train_result = best_model.score(X_train,y_train)
-        total1 = t2 - t0
-        total = t1 - t0
+        train_result = best_model.score(X_train, y_train)
+        total1 = round(t2 - t0, 3)
+        total = round(t1 - t0, 3)
         print(f'K={k} gave {final_result}% accuracy in testing with the best cross-validated split')
         output.write(f"{k}, {final_result}, {train_result}, {total},{total1}\n")
-
-
         print(f"KNN Run-time without cross-val: {total}, run-time with cross-val: {total1}")
 
 '''K=1 gave [0.6291834  0.59404284 0.67804552 0.64156627 0.68373494 0.70304653
