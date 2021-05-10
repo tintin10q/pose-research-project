@@ -14,10 +14,10 @@ if len(sys.argv) > 1:
     cores = int(sys.argv[1])
     assert cores <= os.cpu_count(), "Cores given"
 else:
-    cores = os.get_cpu() * 2
+    cores = os.cpu_count() * 2
 print(f"Running with {cores} cores")
 
-df = pd.read_csv('ShakeFive2.metadata.csv')
+df = pd.read_csv('ShakeFive2.1.metadata.csv')
 df = df.drop(["FrameID", "timestamp", "VideoName"], axis=1)  # remove those collums
 
 df = df.mask(df.eq('None')).dropna()  # remove rows with None in them
@@ -49,17 +49,29 @@ while os.path.exists(path):
     n += 1
     path = f"NeuralNet_{n}.csv"
 
+
+# we first tested alpha [0.0001, 0.0005, 0.001, 0.005, 0.01] with layers [100, 100, 100, 100] and found that 0.01 was the best
+#
+
+def layers(min, max, steps, layers_min, layers_max):
+    for layers in range(layers_min, layers_max):
+        for i in range(min, max, steps):
+            yield [i for l in range(layers)]
+
 with open(path, "a+") as output:
-    output.write("alpha, final_result, train_result,time,total1\n")
-    for alpha in [0.0001, 0.0005, 0.001, 0.005, 0.01]:
+    output.write("alpha, final_result, train_result,time,time2, cross_val_score, cross_val_score1,cross_val_score2,cross_val_score3,cross_val_score4, nodes, layers\n")
+    alpha = 0.001
+    for layer in layers(10, 200, 10, 1, 4):
+        print(f"Doing {layer} layers...")
         t0 = time.time()
-        mlp = MLPClassifier(solver='adam', early_stopping=True, verbose=True, random_state=0, hidden_layer_sizes=[100, 100, 100, 100], alpha=alpha, max_iter=9000).fit(
+        mlp = MLPClassifier(solver='adam', early_stopping=True, verbose=False, random_state=0, hidden_layer_sizes=layer, alpha=alpha, max_iter=9000).fit(
             X_train, y_train)
         t1 = time.time()
 
         cross_val_dic = cross_validate(mlp, X_train, y_train, n_jobs=cores, return_estimator=True)
         t2 = time.time()
         scores = cross_val_dic['test_score']
+        scores_string = ",".join([str(round(score, 3)) for score in scores])
         best_model = cross_val_dic['estimator'][np.argmax(scores)]
         final_result = best_model.score(X_test, y_test)
         train_result = best_model.score(X_train, y_train)
@@ -74,4 +86,4 @@ with open(path, "a+") as output:
 
         print(f"Run-time without cross-val: {total}, run-time with cross-val: {total1}")
         
-        output.write(f"{alpha}, {final_result}, {train_result} {total} {total1}\n")
+        output.write(f"{alpha}, {final_result}, {train_result}, {total}, {total1}, {scores_string}, {layer[0]}, {len(layer)}\n")

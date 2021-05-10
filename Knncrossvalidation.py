@@ -15,7 +15,7 @@ else:
 
 print(f"Running with {cores} cores")
 
-df = pd.read_csv('ShakeFive2.metadata.csv')
+df = pd.read_csv('ShakeFive2.1.metadata.csv')
 
 ''' This is to show where s0 action and s1 action are the same we remove the ones where it s1 is None because this is almost all of the ones where they don't match
 b = df.S1ActionName == df.S0ActionName
@@ -30,7 +30,7 @@ df = df.mask(df.eq('None')).dropna()  # remove rows with None in them
 y = df.S0ActionName  # subsetting only the action names (target labels)
 X = df.drop(["S0ActionName", "S1ActionName"], axis=1)  # remove those y from x
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)  # split that boi
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=90001)  # split that boi
 
 n = 1
 path = f"Knncrossvalidation_{n}.csv"
@@ -39,8 +39,8 @@ while os.path.exists(path):
     path = f"Knncrossvalidation_{n}.csv"
 print(f"Writing results to \"{path}\"")
 with open(path, "a+") as output:
-    output.write(f"k, final_result, train_result, traintime, crossval_time\n")
-    for k in range(1, 250, 4):
+    output.write(f"k, final_result, train_result, cross_val_score, cross_val_score1,cross_val_score2,cross_val_score3,cross_val_score4, traintime, crossval_time\n")
+    for k in range(1, 250, 2):
         t0 = time.time()
         clf = KNeighborsClassifier(n_neighbors=k, n_jobs=-1)
         clf.fit(X_train, y_train)
@@ -50,10 +50,10 @@ with open(path, "a+") as output:
         t2 = time.time()
 
         scores = cross_val_dic['test_score']
-        scores_string = ",".join([str(score) for score in scores])
+        scores_string = ",".join([str(round(score, 3)) for score in scores])
         best_model = cross_val_dic['estimator'][np.argmax(scores)]
-        final_result = best_model.score(X_test, y_test)
-        train_result = best_model.score(X_train, y_train)
+        final_result = round(best_model.score(X_test, y_test), 3)
+        train_result = round(best_model.score(X_train, y_train), 3)
         total1 = round(t2 - t0, 3)
         total = round(t1 - t0, 3)
         print(f'K={k} gave {final_result}% accuracy in testing with the best cross-validated split')
