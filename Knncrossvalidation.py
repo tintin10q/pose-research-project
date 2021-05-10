@@ -50,14 +50,14 @@ with open(path, "a+") as output:
         t2 = time.time()
 
         scores = cross_val_dic['test_score']
-        print(scores)
+        scores_string = ",".join([str(score) for score in scores])
         best_model = cross_val_dic['estimator'][np.argmax(scores)]
         final_result = best_model.score(X_test, y_test)
         train_result = best_model.score(X_train, y_train)
         total1 = round(t2 - t0, 3)
         total = round(t1 - t0, 3)
         print(f'K={k} gave {final_result}% accuracy in testing with the best cross-validated split')
-        output.write(f"{k}, {final_result}, {train_result}, {total},{total1}\n")
+        output.write(f"{k}, {final_result}, {train_result}, {scores_string}, {total},{total1}\n")
         print(f"KNN Run-time without cross-val: {total}, run-time with cross-val: {total1}")
 
 '''K=1 gave [0.6291834  0.59404284 0.67804552 0.64156627 0.68373494 0.70304653

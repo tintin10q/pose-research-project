@@ -8,6 +8,7 @@ __pycache__/
 *.so
 *.csv
 !ShakeFive2.metadata.csv
+!ShakeFive2.1.metadata.csv
 # Distribution / packaging
 .Python
 build/
